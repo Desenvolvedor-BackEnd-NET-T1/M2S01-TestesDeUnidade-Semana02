@@ -26,6 +26,7 @@ public class ClienteServiceTests
         var servico = new ClienteService(repositorio);
         var dto = CadastroClienteDtoFabrica.CriarValido();
 
+        // Act
         var resultado = servico.Cadastrar(dto);
 
         Assert.True(resultado.Sucesso);
@@ -48,5 +49,23 @@ public class ClienteServiceTests
         Assert.Equal(resultado.Cliente.Email, clienteArmazenado!.Email);
 
         Assert.Single(repositorio.Listar());
+    }
+
+
+    [Fact]
+    public void Cadastrar_ComDadosInvalidos_NaoDevePersistirCliente()
+    {
+        // Cada teste cria seu próprio repositório, para evitar vazamento de estado
+        // entre testes. Não é necessário usar mocks aqui: um repositório real e
+        // simples (em memória) já é suficiente para verificar o comportamento.
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarInvalido();
+
+        // Act
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+
     }
 }

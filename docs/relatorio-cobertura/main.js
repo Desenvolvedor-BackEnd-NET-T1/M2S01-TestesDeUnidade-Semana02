@@ -291,10 +291,10 @@ var assemblies = [
     "name": "CadastroClientes.Core",
     "classes": [
       { "name": "CadastroClientes.Core.Dtos.CadastroClienteDto", "rp": "CadastroClientes.Core_CadastroClienteDto.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 35, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CadastroClientes.Core.Dtos.ErroValidacao", "rp": "CadastroClientes.Core_ErroValidacao.html", "cl": 0, "ucl": 7, "cal": 7, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CadastroClientes.Core.Dtos.ResultadoCadastro", "rp": "CadastroClientes.Core_ResultadoCadastro.html", "cl": 12, "ucl": 5, "cal": 17, "tl": 52, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CadastroClientes.Core.Dtos.ErroValidacao", "rp": "CadastroClientes.Core_ErroValidacao.html", "cl": 6, "ucl": 1, "cal": 7, "tl": 19, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CadastroClientes.Core.Dtos.ResultadoCadastro", "rp": "CadastroClientes.Core_ResultadoCadastro.html", "cl": 15, "ucl": 2, "cal": 17, "tl": 52, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CadastroClientes.Core.Modelos.Cliente", "rp": "CadastroClientes.Core_Cliente.html", "cl": 12, "ucl": 0, "cal": 12, "tl": 33, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
-      { "name": "CadastroClientes.Core.Servicos.ClienteService", "rp": "CadastroClientes.Core_ClienteService.html", "cl": 117, "ucl": 107, "cal": 224, "tl": 379, "cb": 51, "tb": 100, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "CadastroClientes.Core.Servicos.ClienteService", "rp": "CadastroClientes.Core_ClienteService.html", "cl": 139, "ucl": 85, "cal": 224, "tl": 379, "cb": 60, "tb": 100, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
       { "name": "CadastroClientes.Core.Validacao.UfsBrasileiras", "rp": "CadastroClientes.Core_UfsBrasileiras.html", "cl": 9, "ucl": 0, "cal": 9, "tl": 22, "cb": 0, "tb": 0, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
     ]},
 ];
@@ -312,7 +312,7 @@ var riskHotspots = [
   {
     "assembly": "CadastroClientes.Core", "class": "CadastroClientes.Core.Servicos.ClienteService", "reportPath": "CadastroClientes.Core_ClienteService.html", "methodName": "Cadastrar(CadastroClientes.Core.Dtos.CadastroClienteDto)", "methodShortName": "Cadastrar(...)", "fileIndex": 0, "line": 63,
     "metrics": [
-      { "value": 29, "exceeded": false },
+      { "value": 28, "exceeded": false },
       { "value": 28, "exceeded": true },
     ]},
 ];

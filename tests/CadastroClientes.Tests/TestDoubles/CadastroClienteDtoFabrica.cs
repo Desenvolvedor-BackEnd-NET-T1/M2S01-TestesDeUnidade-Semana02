@@ -29,4 +29,22 @@ public static class CadastroClienteDtoFabrica
             Cep = "01310930",
         };
     }
+
+    public static CadastroClienteDto CriarInvalido()
+    {
+        return new CadastroClienteDto
+        {
+            Nome = "",
+            Email = "email.invalido-example.com",
+            Telefone = "11ABC65432",
+            Sexo = "X",
+            Profissao = "Advogado",
+            Logradouro = "Rua das Pedras",
+            Numero = "45",
+            Bairro = "Jardins",
+            Cidade = "São Paulo",
+            Uf = "SP",
+            Cep = "123"
+        };
+    }
 }

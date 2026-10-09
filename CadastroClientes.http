@@ -10,11 +10,11 @@ POST {{baseUrl}}/clientes
 Content-Type: application/json
 
 {
-  "nome": "Ana Silva",
-  "email": "ana.silva@example.com",
+  "nome": "Bruno Melo",
+  "email": "bruno.melo@example.com",
   "telefone": "11987654321",
-  "sexo": "F",
-  "profissao": "Engenheira",
+  "sexo": "M",
+  "profissao": "Engenheiro",
   "logradouro": "Rua das Flores",
   "numero": "123",
   "bairro": "Centro",
