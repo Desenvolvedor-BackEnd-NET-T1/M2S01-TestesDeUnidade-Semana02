@@ -1,0 +1,28 @@
+Summary
+  Generated on: 09/10/2026 - 06:36:56
+  Coverage date: 09/10/2026 - 06:36:55
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 6
+  Files: 6
+  Line coverage: 57.5%
+  Covered lines: 161
+  Uncovered lines: 119
+  Coverable lines: 280
+  Total lines: 540
+  Branch coverage: 51% (51 of 100)
+  Covered branches: 51
+  Total branches: 100
+  Method coverage: 88.2% (45 of 51)
+  Full method coverage: 60.7% (31 of 51)
+  Covered methods: 45
+  Fully covered methods: 31
+  Total methods: 51
+
+CadastroClientes.Core                              57.5%
+  CadastroClientes.Core.Dtos.CadastroClienteDto     100%
+  CadastroClientes.Core.Dtos.ErroValidacao            0%
+  CadastroClientes.Core.Dtos.ResultadoCadastro     70.5%
+  CadastroClientes.Core.Modelos.Cliente             100%
+  CadastroClientes.Core.Servicos.ClienteService    52.2%
+  CadastroClientes.Core.Validacao.UfsBrasileiras    100%

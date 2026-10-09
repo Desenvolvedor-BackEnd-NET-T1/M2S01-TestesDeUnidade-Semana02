@@ -1,0 +1,44 @@
+// Exemplo separado — teste sem asserção útil
+//
+// ESTE ARQUIVO NÃO FAZ PARTE DA SEQUÊNCIA DE ETAPAS (01 a 05) E NÃO DEVE SER
+// INCORPORADO JUNTO COM ELAS. Ele existe apenas para a discussão em aula sobre
+// a diferença entre "o código foi executado" e "o comportamento foi verificado".
+//
+// Se você incorporar este teste isoladamente e gerar a cobertura, vai notar que
+// ele EXERCITA boa parte do ClienteService (porque chama Cadastrar com uma
+// entrada inválida) e portanto AUMENTA a cobertura de linhas/ramificações,
+// exatamente como qualquer outro teste. A diferença é que ele não verifica se o
+// comportamento está correto: ele passaria mesmo que o serviço devolvesse
+// Sucesso = true para uma entrada claramente inválida, ou mesmo que persistisse
+// o cliente indevidamente.
+//
+// Esse é o ponto da aula: cobertura alta não garante qualidade das asserções.
+
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class ExemploTesteSemAssercaoUtilTests
+{
+    [Fact]
+    public void Cadastrar_ComNomeAusente_ExemploDeTesteFraco()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = null;
+
+        var resultado = servico.Cadastrar(dto);
+
+        // Problema: esta asserção não verifica NADA sobre o comportamento
+        // esperado (que o cadastro deveria falhar, com um erro no campo Nome,
+        // e sem persistir o cliente). "resultado não é nulo" é sempre verdade
+        // para qualquer retorno do método, correto ou não.
+        Assert.NotNull(resultado);
+
+        // Uma variação igualmente inútil, só para ilustrar: executar o código
+        // e não afirmar nada sobre o resultado dele.
+        // Assert.True(true);
+    }
+}

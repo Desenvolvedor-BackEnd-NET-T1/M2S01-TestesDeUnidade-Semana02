@@ -1,0 +1,75 @@
+// Etapa 5 — Confirmação de que entradas inválidas não são persistidas
+//
+// Como incorporar: copie este conteúdo para um novo arquivo .cs dentro de
+// tests/CadastroClientes.Tests/Servicos/ (veja docs/testes-adicionais/LEIA-ME.md).
+//
+// Objetivo: reforçar, de forma concentrada, a regra "não persista o cliente
+// quando houver qualquer erro" para várias causas de falha diferentes. As
+// etapas anteriores já verificam isso caso a caso; este arquivo junta vários
+// cenários inválidos em uma única Theory para deixar a regra bem explícita.
+
+using CadastroClientes.Core.Dtos;
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class EntradasInvalidasNaoPersistemTests
+{
+    public static IEnumerable<object[]> CadastrosInvalidos()
+    {
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Nome = null) };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Nome = "AB") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Email = "formato-invalido") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Telefone = "123") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Sexo = "X") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Profissao = "") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Logradouro = "Ru") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Numero = null) };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Bairro = "C") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Cidade = "S") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Uf = "ZZ") };
+        yield return new object[] { CriarComCampoAlterado(dto => dto.Cep = "123") };
+    }
+
+    [Theory]
+    [MemberData(nameof(CadastrosInvalidos))]
+    public void Cadastrar_ComQualquerEntradaInvalida_NaoDevePersistirNadaNoRepositorio(CadastroClienteDto dtoInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+
+        var resultado = servico.Cadastrar(dtoInvalido);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Null(resultado.Cliente);
+        Assert.NotEmpty(resultado.Erros);
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComMultiplosCamposInvalidos_DeveAcumularTodosOsErrosENaoPersistir()
+    {
+        // Mais de um campo errado ao mesmo tempo: todos os erros devem ser
+        // acumulados na mesma resposta, e nada deve ser persistido.
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = null;
+        dto.Telefone = "abc";
+        dto.Cep = "123";
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.True(resultado.Erros.Count >= 3);
+        Assert.Empty(repositorio.Listar());
+    }
+
+    private static CadastroClienteDto CriarComCampoAlterado(Action<CadastroClienteDto> alterar)
+    {
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        alterar(dto);
+        return dto;
+    }
+}

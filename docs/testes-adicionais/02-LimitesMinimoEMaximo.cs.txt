@@ -1,0 +1,459 @@
+// Etapa 2 — Limites mínimos e máximos
+//
+// Como incorporar: copie este conteúdo para um novo arquivo .cs dentro de
+// tests/CadastroClientes.Tests/Servicos/ (veja docs/testes-adicionais/LEIA-ME.md).
+//
+// Objetivo: exercitar os ramos de tamanho mínimo e máximo de cada campo que
+// possui essa regra, usando dados de fronteira: o valor mínimo permitido,
+// um caractere abaixo do mínimo, o valor máximo permitido e um caractere
+// acima do máximo. O conteúdo das strings não importa aqui — apenas o
+// comprimento — por isso elas são geradas com `new string(caractere, tamanho)`.
+
+using CadastroClientes.Core.Modelos;
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class LimitesMinimoEMaximoTests
+{
+    // ----- Nome: 3 a 10 caracteres -----
+
+    [Fact]
+    public void Cadastrar_ComNomeNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = new string('a', 3);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComNomeUmCaractereAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = new string('a', 2);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Nome));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComNomeNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = new string('a', 10);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComNomeUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = new string('a', 11);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Nome));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Email: até 100 caracteres (não há mínimo além da obrigatoriedade) -----
+
+    [Fact]
+    public void Cadastrar_ComEmailNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        const string dominio = "@exemplo.com";
+        dto.Email = new string('a', 100 - dominio.Length) + dominio;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+        Assert.Equal(100, dto.Email.Length);
+    }
+
+    [Fact]
+    public void Cadastrar_ComEmailUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        const string dominio = "@exemplo.com";
+        dto.Email = new string('a', 101 - dominio.Length) + dominio;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Email));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Telefone: 10 a 11 dígitos -----
+
+    [Fact]
+    public void Cadastrar_ComTelefoneNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = new string('1', 10);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComTelefoneUmDigitoAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = new string('1', 9);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Telefone));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComTelefoneNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = new string('1', 11);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComTelefoneUmDigitoAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = new string('1', 12);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Telefone));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Profissão: 2 a 80 caracteres -----
+
+    [Fact]
+    public void Cadastrar_ComProfissaoNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Profissao = new string('a', 2);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComProfissaoUmCaractereAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Profissao = new string('a', 1);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Profissao));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComProfissaoNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Profissao = new string('a', 80);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComProfissaoUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Profissao = new string('a', 81);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Profissao));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Logradouro: 3 a 100 caracteres -----
+
+    [Fact]
+    public void Cadastrar_ComLogradouroNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Logradouro = new string('a', 3);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComLogradouroUmCaractereAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Logradouro = new string('a', 2);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Logradouro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComLogradouroNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Logradouro = new string('a', 100);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComLogradouroUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Logradouro = new string('a', 101);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Logradouro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Número do endereço: 1 a 10 caracteres (aceita "S/N") -----
+    // Observação: como o mínimo é 1, não existe um caso "abaixo do mínimo"
+    // diferente de "ausente" (já cobrido na Etapa 1). Por isso aqui testamos
+    // apenas o mínimo válido, o máximo válido e um acima do máximo.
+
+    [Fact]
+    public void Cadastrar_ComNumeroNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Numero = new string('9', 1);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComNumeroSemBarra_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Numero = "S/N";
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComNumeroNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Numero = new string('9', 10);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComNumeroUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Numero = new string('9', 11);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Numero));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Bairro: 2 a 60 caracteres -----
+
+    [Fact]
+    public void Cadastrar_ComBairroNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Bairro = new string('a', 2);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComBairroUmCaractereAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Bairro = new string('a', 1);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Bairro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComBairroNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Bairro = new string('a', 60);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComBairroUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Bairro = new string('a', 61);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Bairro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Cidade: 2 a 60 caracteres -----
+
+    [Fact]
+    public void Cadastrar_ComCidadeNoTamanhoMinimo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cidade = new string('a', 2);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComCidadeUmCaractereAbaixoDoMinimo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cidade = new string('a', 1);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cidade));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComCidadeNoTamanhoMaximo_DeveTerSucesso()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cidade = new string('a', 60);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    [Fact]
+    public void Cadastrar_ComCidadeUmCaractereAcimaDoMaximo_DeveFalhar()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cidade = new string('a', 61);
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cidade));
+        Assert.Empty(repositorio.Listar());
+    }
+}

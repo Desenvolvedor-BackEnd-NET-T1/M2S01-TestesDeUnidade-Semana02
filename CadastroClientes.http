@@ -1,0 +1,77 @@
+@baseUrl = http://localhost:5252
+
+### Listar clientes cadastrados (começa vazio)
+GET {{baseUrl}}/clientes
+
+
+### 1) Cadastro válido — deve responder 201 Created com cabeçalho Location
+# @name cadastroValido
+POST {{baseUrl}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "Ana Silva",
+  "email": "ana.silva@example.com",
+  "telefone": "11987654321",
+  "sexo": "F",
+  "profissao": "Engenheira",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "uf": "SP",
+  "cep": "01310930"
+}
+
+
+### Consultar o cliente recém-cadastrado (usa o id da resposta anterior)
+GET {{baseUrl}}/clientes/{{cadastroValido.response.body.$.id}}
+
+
+### 2) Cadastro inválido — vários campos errados ao mesmo tempo
+# Nome ausente, telefone com letras, sexo em código inválido e CEP com tamanho errado.
+# Deve responder 400 Bad Request com um erro por campo, e NÃO deve persistir nada.
+POST {{baseUrl}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "",
+  "email": "outra.pessoa@example.com",
+  "telefone": "11ABC65432",
+  "sexo": "X",
+  "profissao": "Advogado",
+  "logradouro": "Rua das Pedras",
+  "numero": "45",
+  "bairro": "Jardins",
+  "cidade": "São Paulo",
+  "uf": "SP",
+  "cep": "123"
+}
+
+
+### 3) Tentativa de email duplicado — mesmo email do cadastro (1), em caixa alta
+# Deve responder 409 Conflict. A comparação de email não diferencia maiúsculas/minúsculas.
+POST {{baseUrl}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "Outro Nome",
+  "email": "ANA.SILVA@EXAMPLE.COM",
+  "telefone": "11999998888",
+  "sexo": "M",
+  "profissao": "Advogado",
+  "logradouro": "Rua das Pedras",
+  "numero": "45",
+  "bairro": "Jardins",
+  "cidade": "São Paulo",
+  "uf": "SP",
+  "cep": "04567000"
+}
+
+
+### Listar clientes cadastrados novamente (deve mostrar só o cadastro válido do passo 1)
+GET {{baseUrl}}/clientes
+
+
+### Consultar um id que não existe — deve responder 404 Not Found
+GET {{baseUrl}}/clientes/00000000-0000-0000-0000-000000000000

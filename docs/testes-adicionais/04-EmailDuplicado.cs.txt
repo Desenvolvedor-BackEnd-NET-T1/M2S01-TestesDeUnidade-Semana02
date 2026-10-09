@@ -1,0 +1,80 @@
+// Etapa 4 — Email duplicado
+//
+// Como incorporar: copie este conteúdo para um novo arquivo .cs dentro de
+// tests/CadastroClientes.Tests/Servicos/ (veja docs/testes-adicionais/LEIA-ME.md).
+//
+// Objetivo: exercitar a regra "não permitir cadastro de dois clientes com o
+// mesmo email", incluindo a comparação sem diferenciar maiúsculas e minúsculas.
+
+using CadastroClientes.Core.Modelos;
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class EmailDuplicadoTests
+{
+    [Fact]
+    public void Cadastrar_ComEmailJaCadastrado_DeveFalharEMarcarComoEmailDuplicado()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+
+        var primeiroCadastro = CadastroClienteDtoFabrica.CriarValido();
+        var resultadoPrimeiro = servico.Cadastrar(primeiroCadastro);
+        Assert.True(resultadoPrimeiro.Sucesso); // pré-condição do teste
+
+        var segundoCadastro = CadastroClienteDtoFabrica.CriarValido();
+        segundoCadastro.Nome = "Outro Nome"; // pessoa "diferente", mesmo email
+        segundoCadastro.Email = primeiroCadastro.Email;
+
+        var resultadoSegundo = servico.Cadastrar(segundoCadastro);
+
+        Assert.False(resultadoSegundo.Sucesso);
+        Assert.True(resultadoSegundo.EmailDuplicado);
+        Assert.Contains(resultadoSegundo.Erros, erro => erro.Campo == nameof(Cliente.Email));
+        Assert.Single(repositorio.Listar()); // continua existindo só o primeiro cliente
+    }
+
+    [Theory]
+    [InlineData("ANA.SILVA@EXAMPLE.COM")]
+    [InlineData("Ana.Silva@Example.Com")]
+    public void Cadastrar_ComEmailDuplicadoEmCaixaDiferente_DeveFalhar(string emailEmOutraCaixa)
+    {
+        // CadastroClienteDtoFabrica.CriarValido() usa "ana.silva@example.com".
+        // A comparação de duplicidade deve ignorar maiúsculas/minúsculas.
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+
+        var primeiroCadastro = CadastroClienteDtoFabrica.CriarValido();
+        servico.Cadastrar(primeiroCadastro);
+
+        var segundoCadastro = CadastroClienteDtoFabrica.CriarValido();
+        segundoCadastro.Email = emailEmOutraCaixa;
+
+        var resultadoSegundo = servico.Cadastrar(segundoCadastro);
+
+        Assert.False(resultadoSegundo.Sucesso);
+        Assert.True(resultadoSegundo.EmailDuplicado);
+        Assert.Single(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComEmailDiferente_NaoDeveSerConsideradoDuplicado()
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+
+        var primeiroCadastro = CadastroClienteDtoFabrica.CriarValido();
+        servico.Cadastrar(primeiroCadastro);
+
+        var segundoCadastro = CadastroClienteDtoFabrica.CriarValido();
+        segundoCadastro.Email = "outra.pessoa@example.com";
+
+        var resultadoSegundo = servico.Cadastrar(segundoCadastro);
+
+        Assert.True(resultadoSegundo.Sucesso);
+        Assert.False(resultadoSegundo.EmailDuplicado);
+        Assert.Equal(2, repositorio.Listar().Count);
+    }
+}

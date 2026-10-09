@@ -1,0 +1,216 @@
+// Etapa 1 — Obrigatoriedade dos campos
+//
+// Como incorporar: copie este conteúdo para um novo arquivo .cs dentro de
+// tests/CadastroClientes.Tests/Servicos/ (veja docs/testes-adicionais/LEIA-ME.md).
+//
+// Objetivo: exercitar o ramo "campo obrigatório ausente" de cada campo do
+// cadastro, usando nulo, string vazia e string contendo apenas espaços.
+// Cada teste cria seu próprio repositório e usa a fábrica de DTOs válidos,
+// alterando apenas o campo sob teste.
+
+using CadastroClientes.Core.Modelos;
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class ObrigatoriedadeDosCamposTests
+{
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComNomeAusente_DeveFalharENaoPersistir(string? nomeInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Nome = nomeInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Nome));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComEmailAusente_DeveFalharENaoPersistir(string? emailInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Email = emailInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Email));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComTelefoneAusente_DeveFalharENaoPersistir(string? telefoneInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = telefoneInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Telefone));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComSexoAusente_DeveFalharENaoPersistir(string? sexoInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Sexo = sexoInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Sexo));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComProfissaoAusente_DeveFalharENaoPersistir(string? profissaoInvalida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Profissao = profissaoInvalida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Profissao));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComLogradouroAusente_DeveFalharENaoPersistir(string? logradouroInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Logradouro = logradouroInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Logradouro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComNumeroAusente_DeveFalharENaoPersistir(string? numeroInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Numero = numeroInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Numero));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComBairroAusente_DeveFalharENaoPersistir(string? bairroInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Bairro = bairroInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Bairro));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComCidadeAusente_DeveFalharENaoPersistir(string? cidadeInvalida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cidade = cidadeInvalida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cidade));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComUfAusente_DeveFalharENaoPersistir(string? ufInvalida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Uf = ufInvalida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Uf));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Cadastrar_ComCepAusente_DeveFalharENaoPersistir(string? cepInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cep = cepInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cep));
+        Assert.Empty(repositorio.Listar());
+    }
+}

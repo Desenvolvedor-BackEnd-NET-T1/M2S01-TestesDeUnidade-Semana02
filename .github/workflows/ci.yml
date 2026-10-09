@@ -1,0 +1,90 @@
+name: CI ilustrativo (build, testes e cobertura)
+
+# Esta esteira é apenas ILUSTRATIVA para a aula de cobertura de testes.
+# Ela NUNCA deve bloquear merges: tanto o job quanto cada passo usam
+# `continue-on-error: true`, então o workflow sempre é concluído com
+# sucesso (ou neutro) mesmo que o build ou os testes falhem. Não há
+# nenhuma "required status check" configurada para ela nas regras de
+# proteção de branch — ela serve só para build/testar automaticamente a
+# cada push/PR e mostrar o resultado da cobertura no resumo da execução.
+
+"on":
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build-testes-cobertura:
+    name: Build, testes e cobertura (não bloqueante)
+    runs-on: ubuntu-latest
+    # Não bloqueante no nível do job: se qualquer passo falhar, o job é
+    # marcado como "sucesso com falhas ignoradas" em vez de "falha".
+    continue-on-error: true
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restaurar dependências da solução
+        continue-on-error: true
+        run: dotnet restore CadastroClientes.slnx
+
+      - name: Compilar a solução
+        continue-on-error: true
+        run: dotnet build CadastroClientes.slnx --no-restore --configuration Release
+
+      - name: Executar testes de unidade com coleta de cobertura
+        continue-on-error: true
+        run: |
+          dotnet test tests/CadastroClientes.Tests/CadastroClientes.Tests.csproj \
+            --no-build --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./coverage \
+            --logger "trx;LogFileName=testes.trx"
+
+      - name: Restaurar ferramentas locais (ReportGenerator)
+        continue-on-error: true
+        run: dotnet tool restore
+
+      - name: Gerar relatório de cobertura (projeto Core)
+        continue-on-error: true
+        run: |
+          dotnet tool run reportgenerator \
+            -reports:"./coverage/**/coverage.cobertura.xml" \
+            -targetdir:"./coverage/relatorio" \
+            -reporttypes:"Html;MarkdownSummaryGithub;TextSummary" \
+            -classfilters:"+CadastroClientes.Core.*"
+
+      - name: Publicar cobertura no resumo da execução
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ -f "./coverage/relatorio/SummaryGithub.md" ]; then
+            cat "./coverage/relatorio/SummaryGithub.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## ⚠️ Cobertura não disponível";
+              echo "O build, os testes ou a geração do relatório falharam nesta execução.";
+              echo "Esta esteira é apenas ilustrativa e não bloqueia o merge.";
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publicar relatório HTML de cobertura como artefato
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-cobertura
+          path: ./coverage/relatorio
+          if-no-files-found: warn
+          retention-days: 14

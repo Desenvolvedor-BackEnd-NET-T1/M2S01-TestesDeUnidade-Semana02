@@ -1,0 +1,184 @@
+// Etapa 3 — Formatos inválidos
+//
+// Como incorporar: copie este conteúdo para um novo arquivo .cs dentro de
+// tests/CadastroClientes.Tests/Servicos/ (veja docs/testes-adicionais/LEIA-ME.md).
+//
+// Objetivo: exercitar os ramos de "formato inválido" dos campos Email, Telefone,
+// Sexo, UF e CEP — regras que não são sobre tamanho, mas sobre o CONTEÚDO
+// aceito para o campo.
+
+using CadastroClientes.Core.Modelos;
+using CadastroClientes.Core.Servicos;
+using CadastroClientes.Tests.TestDoubles;
+
+namespace CadastroClientes.Tests.Servicos;
+
+public class FormatosInvalidosTests
+{
+    // ----- Email: formato validado via System.Net.Mail.MailAddress -----
+    // Lembrete didático: essa verificação comprova apenas a SINTAXE do
+    // endereço, nunca que ele realmente existe ou recebe emails.
+
+    [Theory]
+    [InlineData("cliente-sem-arroba.com")]
+    [InlineData("cliente@")]
+    [InlineData("@dominio.com")]
+    public void Cadastrar_ComEmailEmFormatoInvalido_DeveFalharENaoPersistir(string emailInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Email = emailInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Email));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Telefone: somente dígitos, sem pontuação -----
+
+    [Theory]
+    [InlineData("11ABCD4321")]
+    [InlineData("(11)98765-4321")]
+    [InlineData("11 98765 4321")]
+    public void Cadastrar_ComTelefoneContendoCaracteresNaoNumericos_DeveFalharENaoPersistir(string telefoneInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Telefone = telefoneInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Telefone));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    // ----- Sexo: apenas os códigos F, M ou NI -----
+
+    [Theory]
+    [InlineData("X")]
+    [InlineData("Masculino")]
+    [InlineData("f")] // minúsculo não é um dos códigos aceitos
+    public void Cadastrar_ComSexoEmCodigoInvalido_DeveFalharENaoPersistir(string sexoInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Sexo = sexoInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Sexo));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Fact]
+    public void Cadastrar_ComSexoNaoInformado_DeveTerSucesso()
+    {
+        // NI é um código válido: o campo continua obrigatório, mas o cliente
+        // pode optar por não informar o sexo.
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Sexo = "NI";
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    // ----- UF: duas letras E pertencente à lista de UFs brasileiras -----
+    // São duas causas de falha distintas, cada uma testada separadamente.
+
+    [Theory]
+    [InlineData("S")]    // uma letra só
+    [InlineData("SPA")]  // três letras
+    [InlineData("12")]   // dois caracteres, mas não são letras
+    public void Cadastrar_ComUfQueNaoTemDuasLetras_DeveFalharENaoPersistir(string ufInvalida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Uf = ufInvalida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Uf));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData("ZZ")] // duas letras, mas não é uma UF brasileira
+    [InlineData("XX")]
+    public void Cadastrar_ComUfQueNaoPertenceALista_DeveFalharENaoPersistir(string ufInvalida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Uf = ufInvalida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Uf));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData("sp")] // minúsculo também deve ser aceito
+    [InlineData("RJ")]
+    public void Cadastrar_ComUfValida_DeveTerSucesso(string ufValida)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Uf = ufValida;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.True(resultado.Sucesso);
+    }
+
+    // ----- CEP: exatamente 8 dígitos, sem pontuação -----
+    // Também são duas causas distintas: tamanho errado e caracteres não numéricos.
+
+    [Theory]
+    [InlineData("0131093")]   // 7 dígitos (um abaixo do exigido)
+    [InlineData("013109300")] // 9 dígitos (um acima do exigido)
+    public void Cadastrar_ComCepComTamanhoDiferenteDeOito_DeveFalharENaoPersistir(string cepInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cep = cepInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cep));
+        Assert.Empty(repositorio.Listar());
+    }
+
+    [Theory]
+    [InlineData("01310-93")] // 8 caracteres (tamanho certo), mas com um hífen no meio
+    [InlineData("ABCDEFGH")]  // 8 caracteres, porém não são dígitos
+    public void Cadastrar_ComCepContendoCaracteresNaoNumericos_DeveFalharENaoPersistir(string cepInvalido)
+    {
+        var repositorio = new RepositorioClienteEmMemoriaDeTeste();
+        var servico = new ClienteService(repositorio);
+        var dto = CadastroClienteDtoFabrica.CriarValido();
+        dto.Cep = cepInvalido;
+
+        var resultado = servico.Cadastrar(dto);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, erro => erro.Campo == nameof(Cliente.Cep));
+        Assert.Empty(repositorio.Listar());
+    }
+}
