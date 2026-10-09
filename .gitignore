@@ -44,6 +44,10 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 
+# Pasta de cobertura gerada pela esteira de CI (.github/workflows/ci.yml)
+# e por execuções locais usando o mesmo comando (./coverage).
+/coverage/
+
 # MSBuild Binary and Structured Log
 *.binlog
 

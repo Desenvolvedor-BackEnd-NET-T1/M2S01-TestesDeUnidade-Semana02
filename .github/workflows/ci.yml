@@ -1,12 +1,22 @@
-name: CI ilustrativo (build, testes e cobertura)
+name: CI ilustrativo (build, testes, cobertura e etapas mockadas)
 
 # Esta esteira é apenas ILUSTRATIVA para a aula de cobertura de testes.
-# Ela NUNCA deve bloquear merges: tanto o job quanto cada passo usam
-# `continue-on-error: true`, então o workflow sempre é concluído com
-# sucesso (ou neutro) mesmo que o build ou os testes falhem. Não há
-# nenhuma "required status check" configurada para ela nas regras de
-# proteção de branch — ela serve só para build/testar automaticamente a
-# cada push/PR e mostrar o resultado da cobertura no resumo da execução.
+# Ela NUNCA deve bloquear merges: todo job usa `continue-on-error: true`,
+# então o workflow sempre é concluído com sucesso (ou neutro) mesmo que
+# algum deles falhe. Não há nenhuma "required status check" configurada
+# para ela nas regras de proteção de branch.
+#
+# De propósito, a pipeline é dividida em vários JOBS (não apenas passos
+# dentro de um job único), para aparecer como etapas visualmente
+# separadas no grafo de execução do GitHub Actions:
+#
+#   Build -> Testes -> Qualidade de Código -> Testes de Integração -> Deploy em Homologação
+#
+# Só "Build" e "Testes" executam algo real (compilar e rodar a suíte
+# xUnit com cobertura). As três últimas etapas (Qualidade de Código,
+# Testes de Integração e Deploy em Homologação) são MOCKADAS: elas só
+# imprimem uma mensagem e esperam alguns segundos, para simular visualmente
+# uma esteira mais completa sem termos essas ferramentas de fato integradas.
 
 "on":
   push:
@@ -19,11 +29,12 @@ permissions:
   contents: read
 
 jobs:
-  build-testes-cobertura:
-    name: Build, testes e cobertura (não bloqueante)
+  # ------------------------------------------------------------------
+  # Etapa 1 (real): Build
+  # ------------------------------------------------------------------
+  build:
+    name: 1) Build
     runs-on: ubuntu-latest
-    # Não bloqueante no nível do job: se qualquer passo falhar, o job é
-    # marcado como "sucesso com falhas ignoradas" em vez de "falha".
     continue-on-error: true
 
     steps:
@@ -43,11 +54,29 @@ jobs:
         continue-on-error: true
         run: dotnet build CadastroClientes.slnx --no-restore --configuration Release
 
+  # ------------------------------------------------------------------
+  # Etapa 2 (real): Testes de unidade + cobertura
+  # ------------------------------------------------------------------
+  testes:
+    name: 2) Testes e cobertura
+    needs: build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
       - name: Executar testes de unidade com coleta de cobertura
         continue-on-error: true
         run: |
           dotnet test tests/CadastroClientes.Tests/CadastroClientes.Tests.csproj \
-            --no-build --configuration Release \
+            --configuration Release \
             --collect:"XPlat Code Coverage" \
             --results-directory ./coverage \
             --logger "trx;LogFileName=testes.trx"
@@ -74,7 +103,7 @@ jobs:
           else
             {
               echo "## ⚠️ Cobertura não disponível";
-              echo "O build, os testes ou a geração do relatório falharam nesta execução.";
+              echo "Os testes ou a geração do relatório falharam nesta execução.";
               echo "Esta esteira é apenas ilustrativa e não bloqueia o merge.";
             } >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -88,3 +117,59 @@ jobs:
           path: ./coverage/relatorio
           if-no-files-found: warn
           retention-days: 14
+
+  # ------------------------------------------------------------------
+  # Etapa 3 (MOCK): Qualidade de código
+  # Simula, por exemplo, um linter ou um SonarQube/SonarCloud. Não há
+  # nenhuma ferramenta real de qualidade de código executando aqui.
+  # ------------------------------------------------------------------
+  qualidade-codigo:
+    name: 3) Qualidade de código (mock)
+    needs: testes
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Simular análise de qualidade de código
+        run: |
+          echo "🔍 (MOCK) Executando análise de qualidade de código..."
+          echo "   Nenhuma ferramenta real está integrada; esta etapa é só ilustrativa."
+          sleep $(( (RANDOM % 10) + 1 ))
+          echo "✅ (MOCK) Análise de qualidade de código concluída."
+
+  # ------------------------------------------------------------------
+  # Etapa 4 (MOCK): Testes de integração
+  # Simula uma suíte de testes de integração (ex.: contra um ambiente
+  # com banco de dados real). Não executa nenhum teste de verdade.
+  # ------------------------------------------------------------------
+  testes-integracao:
+    name: 4) Testes de integração (mock)
+    needs: qualidade-codigo
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Simular execução de testes de integração
+        run: |
+          echo "🧪 (MOCK) Executando testes de integração..."
+          echo "   Nenhum teste real está sendo executado; esta etapa é só ilustrativa."
+          sleep $(( (RANDOM % 10) + 1 ))
+          echo "✅ (MOCK) Testes de integração concluídos."
+
+  # ------------------------------------------------------------------
+  # Etapa 5 (MOCK): Deploy em homologação
+  # Simula um deploy para um ambiente de homologação/staging.
+  # ------------------------------------------------------------------
+  deploy-homologacao:
+    name: 5) Deploy em homologação (mock)
+    needs: testes-integracao
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Simular deploy em homologação
+        run: |
+          echo "🚀 (MOCK) Publicando em ambiente de homologação..."
+          echo "   Nenhum deploy real está sendo feito; esta etapa é só ilustrativa."
+          sleep $(( (RANDOM % 10) + 1 ))
+          echo "✅ (MOCK) Deploy em homologação concluído."

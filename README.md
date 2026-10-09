@@ -270,23 +270,36 @@ retornado pelo cadastro válido).
 
 Este repositório inclui uma esteira de CI em
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) que roda a cada
-`push` e `pull request`: restaura, compila, executa a suíte de testes com
-coleta de cobertura e publica o resumo da cobertura (projeto Core) na própria
-tela da execução no GitHub Actions, além de disponibilizar o relatório HTML
-completo como artefato para download.
+`push` e `pull request`. Ela é dividida em **5 jobs encadeados** (com
+`needs:`), para aparecerem como etapas visualmente separadas no grafo de
+execução do GitHub Actions:
 
-**Esta esteira é apenas ilustrativa e nunca bloqueia merge.** Tanto o job
-quanto cada passo usam `continue-on-error: true`, então o workflow sempre
-termina como sucesso (ou "sucesso com avisos"), mesmo que o build ou os
-testes falhem — e, de qualquer forma, não há nenhuma regra de proteção de
-branch marcando essa checagem como obrigatória. O objetivo é só mostrar, na
-prática, como automatizar build + testes + cobertura em uma esteira, sem
-impor nenhum critério de qualidade como porta de entrada para o merge.
+1. **Build** (real) — restaura e compila a solução.
+2. **Testes e cobertura** (real) — roda a suíte xUnit com coleta de
+   cobertura (Coverlet), gera o relatório com o ReportGenerator (escopo só
+   no projeto Core), publica o resumo da cobertura na tela da execução e
+   sobe o relatório HTML completo como artefato para download.
+3. **Qualidade de código** (mock) — não executa nenhuma ferramenta real;
+   apenas imprime uma mensagem e espera alguns segundos, simulando onde um
+   linter ou um SonarQube/SonarCloud entraria.
+4. **Testes de integração** (mock) — mesma ideia: só mensagem + espera,
+   simulando onde uma suíte de testes de integração entraria.
+5. **Deploy em homologação** (mock) — idem, simulando um passo de deploy
+   para um ambiente de homologação/staging.
 
-Para ver o resultado: abra a aba **Actions** do repositório no GitHub, entre
-na execução desejada e consulte o resumo (**Summary**) do job — a cobertura
-aparece lá — ou baixe o artefato `relatorio-cobertura` para abrir o HTML
-completo localmente.
+**Esta esteira é apenas ilustrativa e nunca bloqueia merge.** Todo job (e
+cada passo dentro dele) usa `continue-on-error: true`, então cada etapa — e
+o workflow como um todo — sempre termina como sucesso (ou "sucesso com
+avisos"), mesmo que o build, os testes ou qualquer mock falhem. Isso também
+garante que os jobs seguintes sempre rodem, mesmo que um anterior falhe —
+o objetivo é só mostrar a esteira completa em execução. Além disso, não há
+nenhuma regra de proteção de branch marcando essa checagem como obrigatória.
+
+Para ver o resultado: abra a aba **Actions** do repositório no GitHub e
+entre na execução desejada. O grafo mostra as 5 etapas encadeadas; o resumo
+(**Summary**) do job "Testes e cobertura" traz a cobertura, e o artefato
+`relatorio-cobertura` (também nessa execução) tem o relatório HTML completo
+para baixar e abrir localmente.
 
 ## Incorporando os testes adicionais gradualmente
 
