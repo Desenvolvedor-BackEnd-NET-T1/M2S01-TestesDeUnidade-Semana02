@@ -167,6 +167,11 @@ detalhe interno da aplicação é exposto.
 
 ## Cobertura de testes
 
+> 📘 Se você quer entender/replicar esta configuração de cobertura em outro
+> projeto .NET 10 + xUnit do zero (pacote necessário, comandos, etc.), veja
+> o guia dedicado [`COMO_HABILITAR_COVERAGE.md`](COMO_HABILITAR_COVERAGE.md).
+> A seção abaixo foca nos comandos já aplicados a este repositório.
+
 A coleta de cobertura usa **Coverlet** (via o pacote `coverlet.collector`,
 já referenciado no projeto de testes) integrado ao executor padrão do
 `dotnet test` (baseado em VSTest) — não há mistura com o Microsoft Testing
